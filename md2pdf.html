@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown to PDF</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .panel {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 500px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #preview {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            min-height: 500px;
+            background: white;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        #preview h1, #preview h2, #preview h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        #preview h1 { font-size: 28px; }
+        #preview h2 { font-size: 24px; }
+        #preview h3 { font-size: 20px; }
+        #preview p { margin-bottom: 12px; line-height: 1.6; }
+        #preview code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        #preview pre {
+            background: #f4f4f4;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin-bottom: 12px;
+        }
+        #preview pre code {
+            background: none;
+            padding: 0;
+        }
+        #preview ul, #preview ol {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+        #preview blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 16px;
+            margin: 12px 0;
+            color: #666;
+        }
+        #preview h1, #preview h2, #preview h3, #preview h4, #preview h5, #preview h6 {
+            page-break-after: avoid;
+            page-break-inside: avoid;
+        }
+        #preview p, #preview li, #preview blockquote {
+            page-break-inside: avoid;
+        }
+        #preview pre {
+            page-break-inside: avoid;
+        }
+        #preview table {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="panel">
+            <h1>输入 Markdown</h1>
+            <textarea id="markdown" placeholder="在此粘贴 Markdown 文本..."></textarea>
+            <button onclick="convertToPDF()">导出为 PDF</button>
+        </div>
+        <div class="panel">
+            <h1>预览</h1>
+            <div id="preview"></div>
+        </div>
+    </div>
+
+    <script>
+        const textarea = document.getElementById('markdown');
+        const preview = document.getElementById('preview');
+
+        textarea.addEventListener('input', () => {
+            preview.innerHTML = marked.parse(textarea.value);
+        });
+
+        function convertToPDF() {
+            const content = preview.innerHTML;
+            if (!content.trim()) {
+                alert('请先输入 Markdown 内容');
+                return;
+            }
+
+            const originalMaxHeight = preview.style.maxHeight;
+            const originalOverflow = preview.style.overflow;
+
+            preview.style.maxHeight = 'none';
+            preview.style.overflow = 'visible';
+
+            const opt = {
+                margin: 10,
+                filename: 'document.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(preview).save().then(() => {
+                preview.style.maxHeight = originalMaxHeight;
+                preview.style.overflow = originalOverflow;
+            });
+        }
+    </script>
+</body>
+</html>
